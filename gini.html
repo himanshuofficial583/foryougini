@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>I Love You Gini</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+    body {
+      margin: 0;
+      background: radial-gradient(circle at center, #1a1a1a, #000);
+      overflow: hidden;
+      font-family: 'Orbitron', sans-serif;
+      color: #fff;
+      touch-action: none;
+    }
+
+    #game {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .ball {
+      position: absolute;
+      width: 12vw;
+      height: 12vw;
+      min-width: 50px;
+      min-height: 50px;
+      background: radial-gradient(circle, #ff4d4d, #990000);
+      border-radius: 50%;
+      box-shadow: 0 0 20px #ff4d4d;
+      left: 10vw;
+      top: 40vh;
+      cursor: grab;
+      transition: transform 0.2s ease;
+    }
+
+    .ball:active {
+      transform: scale(1.1);
+    }
+
+    .goal {
+      position: absolute;
+      width: 28vw;
+      height: 20vw;
+      min-width: 120px;
+      min-height: 80px;
+      border: 4px dashed #00ff99;
+      box-shadow: 0 0 20px #00ff99;
+      left: 70vw;
+      top: 40vh;
+      border-radius: 10px;
+    }
+
+    .popup {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.85);
+      color: #ff99ff;
+      padding: 5vw;
+      border: 3px solid #ff99ff;
+      border-radius: 12px;
+      font-size: 6vw;
+      text-align: center;
+      box-shadow: 0 0 30px #ff99ff;
+      display: none;
+      animation: fadeIn 1s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translate(-50%, -60%); }
+      to { opacity: 1; transform: translate(-50%, -50%); }
+    }
+
+    .heart {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Heart_corazón.svg/1024px-Heart_corazón.svg.png') no-repeat center;
+      background-size: contain;
+      animation: float 3s infinite ease-in-out;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0); opacity: 1; }
+      50% { transform: translateY(-20px); opacity: 0.7; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+
+    #replay {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ff99ff;
+      color: #000;
+      border: none;
+      padding: 2vw 4vw;
+      font-size: 4vw;
+      border-radius: 8px;
+      cursor: pointer;
+      display: none;
+      box-shadow: 0 0 10px #ff99ff;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    @media (max-width: 600px) {
+      .popup { font-size: 7vw; }
+      #replay { font-size: 5vw; }
+    }
+  </style>
+</head>
+<body>
+  <audio id="bgMusic" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_3b9b9e4f2e.mp3?filename=romantic-piano-112194.mp3" loop></audio>
+
+  <div id="game">
+    <div class="ball" id="ball"></div>
+    <div class="goal" id="goal"></div>
+    <div class="popup" id="popup">I love you, Gini 💖</div>
+    <button id="replay">Play Again</button>
+  </div>
+
+  <script>
+    const ball = document.getElementById('ball');
+    const goal = document.getElementById('goal');
+    const popup = document.getElementById('popup');
+    const replay = document.getElementById('replay');
+    const bgMusic = document.getElementById('bgMusic');
+
+    let isDragging = false;
+
+    // Mouse support
+    ball.addEventListener('mousedown', () => isDragging = true);
+    document.addEventListener('mouseup', () => isDragging = false);
+    document.addEventListener('mousemove', (e) => {
+      if (isDragging) moveBall(e.clientX, e.clientY);
+    });
+
+    // Touch support
+    ball.addEventListener('touchstart', () => isDragging = true);
+    document.addEventListener('touchend', () => isDragging = false);
+    document.addEventListener('touchmove', (e) => {
+      if (isDragging) {
+        const touch = e.touches[0];
+        moveBall(touch.clientX, touch.clientY);
+      }
+    });
+
+    function moveBall(x, y) {
+      ball.style.left = `${x - ball.offsetWidth / 2}px`;
+      ball.style.top = `${y - ball.offsetHeight / 2}px`;
+
+      const ballRect = ball.getBoundingClientRect();
+      const goalRect = goal.getBoundingClientRect();
+
+      if (
+        ballRect.left > goalRect.left &&
+        ballRect.right < goalRect.right &&
+        ballRect.top > goalRect.top &&
+        ballRect.bottom < goalRect.bottom
+      ) {
+        popup.style.display = 'block';
+        replay.style.display = 'block';
+        bgMusic.play();
+        spawnHearts();
+        isDragging = false;
+      }
+    }
+
+    function spawnHearts() {
+      for (let i = 0; i < 20; i++) {
+        const heart = document.createElement('div');
+        heart.className = 'heart';
+        heart.style.left = `${Math.random() * window.innerWidth}px`;
+        heart.style.top = `${Math.random() * window.innerHeight}px`;
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 3000);
+      }
+    }
+
+    replay.addEventListener('click', () => {
+      popup.style.display = 'none';
+      replay.style.display = 'none';
+      bgMusic.pause();
+      bgMusic.currentTime = 0;
+      ball.style.left = '10vw';
+      ball.style.top = '40vh';
+    });
+  </script>
+</body>
+</html>
